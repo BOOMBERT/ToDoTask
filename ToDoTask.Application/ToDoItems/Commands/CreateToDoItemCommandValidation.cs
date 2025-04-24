@@ -14,7 +14,7 @@ public class CreateToDoItemCommandValidation : AbstractValidator<CreateToDoItemC
             .IsValidToDoItemDescription();
 
         RuleFor(toDoItem => toDoItem.ExpiryDateTime)
-            .IsNotPast();
+            .IsNotPastOrPresent();
 
         RuleFor(toDoItem => toDoItem.CompletionPercentage)
             .IsPercentBetween0And100WithMaxTwoDecimals();

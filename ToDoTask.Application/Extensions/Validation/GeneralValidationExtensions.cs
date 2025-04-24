@@ -4,11 +4,11 @@ namespace ToDoTask.Application.Extensions.Validation;
 
 public static class GeneralValidationExtensions
 {
-    public static IRuleBuilderOptions<T, DateTimeOffset> IsNotPast<T>(this IRuleBuilder<T, DateTimeOffset> ruleBuilder)
+    public static IRuleBuilderOptions<T, DateTimeOffset> IsNotPastOrPresent<T>(this IRuleBuilder<T, DateTimeOffset> ruleBuilder)
     {
         return ruleBuilder
             .GreaterThanOrEqualTo(DateTimeOffset.Now)
-            .WithMessage("Date time cannot be in the past.");
+            .WithMessage("Date time cannot be in the past or present.");
     }
 
     public static IRuleBuilderOptions<T, decimal> IsPercentBetween0And100WithMaxTwoDecimals<T>(this IRuleBuilder<T, decimal> ruleBuilder)
