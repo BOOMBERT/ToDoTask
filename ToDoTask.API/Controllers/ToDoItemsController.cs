@@ -20,7 +20,7 @@ public class ToDoItemsController : ControllerBase
     /// </summary>
     /// <param name="command">Details of the ToDo item to create.</param>
     /// <returns>The unique identifier (Guid) of the newly created ToDo item.</returns>
-    /// <response code="201">The To Do item was successfully created.</response>
+    /// <response code="201">The ToDo item was successfully created.</response>
     /// <response code="400">The request is invalid (e.g., validation errors).</response>
     [HttpPost]
     [ProducesResponseType(StatusCodes.Status201Created)]
