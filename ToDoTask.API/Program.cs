@@ -1,10 +1,12 @@
 using ToDoTask.API.Extensions;
 using ToDoTask.Infrastructure.Extensions;
+using ToDoTask.Application.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddInfrastructure(builder.Configuration);
 builder.AddPresentation();
+builder.Services.AddApplication();
 
 var app = builder.Build();
 
