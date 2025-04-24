@@ -1,0 +1,31 @@
+services:
+  todotask.database:
+    image: postgres:latest
+    container_name: todotask-database
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=ToDoTaskDatabase
+    ports:
+      - 5433:5432
+    networks:
+      - todotask_network
+    volumes:
+      - todotask_db_data:/var/lib/postgresql/data
+
+  todotask.api:
+    image: ${DOCKER_REGISTRY-}todotask-api:latest
+    container_name: todotask-api
+    build:
+      context: .
+      dockerfile: ToDoTask.API/Dockerfile
+    networks:
+      - todotask_network
+    depends_on:
+      - todotask.database
+
+volumes:
+  todotask_db_data:
+
+networks:
+  todotask_network:
