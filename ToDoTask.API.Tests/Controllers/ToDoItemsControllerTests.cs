@@ -1,9 +1,12 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using System.Net;
+using System.Net.Http.Json;
 using System.Text;
 using System.Text.Json;
 using ToDoTask.Application.ToDoItems.Commands.CreateToDoItem;
+using ToDoTask.Application.ToDoItems.Dtos;
+using ToDoTask.Domain.Entities;
 using ToDoTask.Infrastructure.Persistence;
 using Xunit;
 
@@ -97,6 +100,67 @@ public class ToDoItemsControllerTests : IClassFixture<CustomWebApplicationFactor
         // Assert
 
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    #endregion
+
+    #region Test_GetToDoItemById
+
+    [Fact]
+    public async Task GetToDoItemById_WhenValidRequest_ShouldReturnSpecifiedToDoItemDtoAnd200Ok()
+    {
+        // Arrange
+
+        await _dbInitializer.ConfigureDatabaseAsync();
+
+        var toDoItem = new ToDoItem
+        {
+            Id = Guid.NewGuid(),
+            Title = "Test Title",
+            Description = "Test Description",
+            ExpiryDateTimeUtc = DateTime.UtcNow.AddDays(7).AddHours(1),
+            CompletionPercentage = 12.34m
+        };
+
+        using (var scope = _factory.Services.CreateScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+
+            await db.AddAsync(toDoItem);
+            await db.SaveChangesAsync();
+        }
+
+        // Act
+
+        var response = await _client.GetAsync($"{BASE_ROUTE_PATH}/{toDoItem.Id}");
+        var toDoItemDtoFromResponse = await response.Content.ReadFromJsonAsync<ToDoItemDto>();
+
+        // Assert
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+        Assert.NotNull(toDoItemDtoFromResponse);
+        Assert.Equal(toDoItem.Id, toDoItemDtoFromResponse.Id);
+        Assert.Equal(toDoItem.Title, toDoItemDtoFromResponse.Title);
+        Assert.Equal(toDoItem.Description, toDoItemDtoFromResponse.Description);
+        Assert.Equal(toDoItem.ExpiryDateTimeUtc, toDoItemDtoFromResponse.ExpiryDateTimeUtc);
+        Assert.Equal(toDoItem.CompletionPercentage, toDoItemDtoFromResponse.CompletionPercentage);
+    }
+
+    [Fact]
+    public async Task GetToDoItemById_WhenNonExistingToDoItem_ShouldReturn404NotFound() 
+    {
+        // Arrange
+
+        await _dbInitializer.ConfigureDatabaseAsync();
+
+        // Act
+
+        var response = await _client.GetAsync($"{BASE_ROUTE_PATH}/{Guid.Empty}");
+
+        // Assert
+
+        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
     }
 
     #endregion
