@@ -37,7 +37,7 @@ public class ToDoItemsControllerTests : IClassFixture<CustomWebApplicationFactor
         {
             Title = "Test Title",
             Description = "Test Description",
-            ExpiryDateTime = DateTime.Now.AddDays(7).AddHours(1),
+            ExpiryDateTimeUtc = DateTime.UtcNow.AddDays(7).AddHours(1),
             CompletionPercentage = 12.34m
         };
 
@@ -64,7 +64,7 @@ public class ToDoItemsControllerTests : IClassFixture<CustomWebApplicationFactor
             Assert.NotNull(toDoItem);
             Assert.Equal(command.Title, toDoItem.Title);
             Assert.Equal(command.Description, toDoItem.Description);
-            Assert.Equal(command.ExpiryDateTime.ToUniversalTime(), toDoItem.ExpiryDateTime);
+            Assert.Equal(command.ExpiryDateTimeUtc, toDoItem.ExpiryDateTimeUtc);
             Assert.Equal(command.CompletionPercentage, toDoItem.CompletionPercentage);
 
             Assert.Equal($"http://localhost/api/todoitems/{toDoItem.Id}", response.Headers.Location?.ToString());
@@ -80,7 +80,7 @@ public class ToDoItemsControllerTests : IClassFixture<CustomWebApplicationFactor
         {
             Title = "",
             Description = new string('A', 513),
-            ExpiryDateTime = DateTime.Now.AddDays(-1),
+            ExpiryDateTimeUtc = DateTime.UtcNow.AddDays(-1),
             CompletionPercentage = 123.456789m
         };
 

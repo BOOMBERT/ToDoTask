@@ -4,6 +4,6 @@ public record ToDoItemDto(
     Guid Id, 
     string Title, 
     string Description, 
-    DateTimeOffset ExpiryDateTime, 
+    DateTime ExpiryDateTimeUtc, 
     decimal CompletionPercentage
     );

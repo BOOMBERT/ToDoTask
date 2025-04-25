@@ -26,7 +26,7 @@ public class CreateToDoItemCommandHandlerTests
         {
             Title = "Test Title",
             Description = "Test Description",
-            ExpiryDateTime = DateTime.Now.AddDays(1),
+            ExpiryDateTimeUtc = DateTime.UtcNow.AddDays(1),
             CompletionPercentage = 0
         };
 

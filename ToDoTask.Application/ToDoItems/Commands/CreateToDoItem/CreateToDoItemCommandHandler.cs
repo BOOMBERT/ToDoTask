@@ -20,7 +20,7 @@ public class CreateToDoItemCommandHandler : IRequestHandler<CreateToDoItemComman
             Id = Guid.NewGuid(),
             Title = request.Title, 
             Description = request.Description, 
-            ExpiryDateTime = request.ExpiryDateTime.ToUniversalTime(), 
+            ExpiryDateTimeUtc = request.ExpiryDateTimeUtc, 
             CompletionPercentage = request.CompletionPercentage 
         };
 

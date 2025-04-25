@@ -24,7 +24,7 @@ public class GetToDoItemByIdQueryHandler : IRequestHandler<GetToDoItemByIdQuery,
             toDoItem.Id, 
             toDoItem.Title, 
             toDoItem.Description,
-            toDoItem.ExpiryDateTime.ToLocalTime(),
+            toDoItem.ExpiryDateTimeUtc,
             toDoItem.CompletionPercentage
             );
 

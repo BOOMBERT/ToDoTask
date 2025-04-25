@@ -6,12 +6,12 @@ namespace ToDoTask.Application.Extensions.Validation.Tests;
 
 public class GeneralValidationExtensionsTests
 {
-    #region Test_IsNotPastOrPresent
+    #region Test_IsFutureUtc
 
-    private InlineValidator<DateTimeOffset> GetIsNotPastOrPresentValidator()
+    private InlineValidator<DateTime> GetIsFutureUtcValidator()
     {
-        var validator = new InlineValidator<DateTimeOffset>();
-        validator.RuleFor(x => x).IsNotPastOrPresent();
+        var validator = new InlineValidator<DateTime>();
+        validator.RuleFor(x => x).IsFutureUtc();
         return validator;
     }
 
@@ -19,15 +19,15 @@ public class GeneralValidationExtensionsTests
     [InlineData(1)] // 1 minute
     [InlineData(60)] // 1 hour
     [InlineData(1440)] // 1 day
-    public void IsNotPastOrPresent_WhenFutureDateTime_ShouldNotHaveValidationErrors(int minutesOffset)
+    public void IsFutureUtc_WhenFutureUtcDateTime_ShouldNotHaveValidationErrors(int minutesOffset)
     {
         // Arrange
 
-        var futureDateTime = DateTimeOffset.Now.AddMinutes(minutesOffset);
+        var futureUtcDateTime = DateTime.UtcNow.AddMinutes(minutesOffset);
 
         // Act
 
-        var result = GetIsNotPastOrPresentValidator().TestValidate(futureDateTime);
+        var result = GetIsFutureUtcValidator().TestValidate(futureUtcDateTime);
 
         // Assert
 
@@ -39,20 +39,20 @@ public class GeneralValidationExtensionsTests
     [InlineData(-1)] // 1 minute ago
     [InlineData(-60)] // 1 hour ago
     [InlineData(-1440)] // 1 day ago
-    public void IsNotPastOrPresent_WhenPastOrPresentDateTime_ShouldHaveValidationError(int minutesOffset)
+    public void IsFutureUtc_WhenNonFutureUtcDateTime_ShouldHaveValidationError(int minutesOffset)
     {
         // Arrange
 
-        var pastOrPresentDateTime = DateTimeOffset.Now.AddMinutes(minutesOffset);
+        var nonFutureUtcDateTime = DateTime.UtcNow.AddMinutes(minutesOffset);
 
         // Act
 
-        var result = GetIsNotPastOrPresentValidator().TestValidate(pastOrPresentDateTime);
+        var result = GetIsFutureUtcValidator().TestValidate(nonFutureUtcDateTime);
 
         // Assert
 
         result.ShouldHaveValidationErrorFor(x => x)
-            .WithErrorMessage("Date time cannot be in the past or present.");
+            .WithErrorMessage("Date time must be in the future.");
     }
 
     #endregion

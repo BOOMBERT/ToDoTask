@@ -16,7 +16,7 @@ internal class ToDoItemConfiguration : IEntityTypeConfiguration<ToDoItem>
             .IsRequired()
             .HasMaxLength(512);
 
-        builder.Property(toDoItem => toDoItem.ExpiryDateTime)
+        builder.Property(toDoItem => toDoItem.ExpiryDateTimeUtc)
             .IsRequired();
 
         builder.Property(toDoItem => toDoItem.CompletionPercentage)
