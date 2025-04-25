@@ -10,6 +10,8 @@ builder.Services.AddApplication();
 
 var app = builder.Build();
 
+app.ApplyMiddlewares();
+
 if (app.Environment.IsDevelopment())
 {
     await app.ApplyMigrationsAsync();

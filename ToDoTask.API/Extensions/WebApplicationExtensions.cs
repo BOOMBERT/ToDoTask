@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using ToDoTask.API.Middlewares;
 using ToDoTask.Infrastructure.Persistence;
 
 namespace ToDoTask.API.Extensions;
@@ -14,5 +15,10 @@ public static class WebApplicationExtensions
             if (dbContext.Database.GetPendingMigrations().Any())
                 await dbContext.Database.MigrateAsync();
         }
+    }
+
+    public static void ApplyMiddlewares(this WebApplication app) 
+    {
+        app.UseMiddleware<ErrorHandlingMiddleware>();
     }
 }

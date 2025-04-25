@@ -1,4 +1,6 @@
-﻿namespace ToDoTask.API.Extensions;
+﻿using ToDoTask.API.Middlewares;
+
+namespace ToDoTask.API.Extensions;
 
 public static class WebApplicationBuilderExtensions
 {
@@ -7,5 +9,7 @@ public static class WebApplicationBuilderExtensions
         builder.Services.AddControllers();
         builder.Services.AddEndpointsApiExplorer();
         builder.Services.AddSwaggerGen();
+
+        builder.Services.AddSingleton<ErrorHandlingMiddleware>();
     }
 }

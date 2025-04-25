@@ -1,9 +1,10 @@
 ﻿using Moq;
+using ToDoTask.Application.ToDoItems.Commands.CreateToDoItem;
 using ToDoTask.Domain.Entities;
 using ToDoTask.Domain.Repositories;
 using Xunit;
 
-namespace ToDoTask.Application.ToDoItems.Commands.Tests;
+namespace ToDoTask.Application.Tests.ToDoItems.Commands.CreateToDoItem;
 
 public class CreateToDoItemCommandHandlerTests
 {

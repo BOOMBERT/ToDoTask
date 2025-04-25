@@ -3,12 +3,11 @@ using Microsoft.Extensions.DependencyInjection;
 using System.Net;
 using System.Text;
 using System.Text.Json;
-using ToDoTask.API.Tests;
-using ToDoTask.Application.ToDoItems.Commands;
+using ToDoTask.Application.ToDoItems.Commands.CreateToDoItem;
 using ToDoTask.Infrastructure.Persistence;
 using Xunit;
 
-namespace ToDoTask.API.Controllers.Tests;
+namespace ToDoTask.API.Tests.Controllers;
 
 public class ToDoItemsControllerTests : IClassFixture<CustomWebApplicationFactory<Program>>
 {
@@ -67,6 +66,8 @@ public class ToDoItemsControllerTests : IClassFixture<CustomWebApplicationFactor
             Assert.Equal(command.Description, toDoItem.Description);
             Assert.Equal(command.ExpiryDateTime.ToUniversalTime(), toDoItem.ExpiryDateTime);
             Assert.Equal(command.CompletionPercentage, toDoItem.CompletionPercentage);
+
+            Assert.Equal($"http://localhost/api/todoitems/{toDoItem.Id}", response.Headers.Location?.ToString());
         }
     }
 

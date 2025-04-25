@@ -1,6 +1,6 @@
 ﻿using MediatR;
 
-namespace ToDoTask.Application.ToDoItems.Commands;
+namespace ToDoTask.Application.ToDoItems.Commands.CreateToDoItem;
 
 /// <summary>
 /// Command for creating a new ToDo item.

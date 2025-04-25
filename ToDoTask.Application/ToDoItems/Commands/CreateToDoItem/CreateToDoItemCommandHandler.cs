@@ -2,7 +2,7 @@
 using ToDoTask.Domain.Entities;
 using ToDoTask.Domain.Repositories;
 
-namespace ToDoTask.Application.ToDoItems.Commands;
+namespace ToDoTask.Application.ToDoItems.Commands.CreateToDoItem;
 
 public class CreateToDoItemCommandHandler : IRequestHandler<CreateToDoItemCommand, Guid>
 {
