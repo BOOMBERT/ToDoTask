@@ -16,5 +16,6 @@ public static class ServiceCollectionExtensions
             options => options.UseNpgsql(connectionString));
 
         services.AddScoped<IGenericRepository, GenericRepository>();
+        services.AddScoped<IToDoItemsRepository, ToDoItemsRepository>();
     }
 }

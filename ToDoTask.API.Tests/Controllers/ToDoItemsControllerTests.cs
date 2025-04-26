@@ -5,6 +5,7 @@ using System.Net.Http.Json;
 using System.Text;
 using System.Text.Json;
 using ToDoTask.Application.ToDoItems.Commands.CreateToDoItem;
+using ToDoTask.Application.ToDoItems.Commands.SetToDoItemCompletionPercentage;
 using ToDoTask.Application.ToDoItems.Commands.UpdateToDoItem;
 using ToDoTask.Application.ToDoItems.Dtos;
 using ToDoTask.Domain.Entities;
@@ -345,6 +346,122 @@ public class ToDoItemsControllerTests : IClassFixture<CustomWebApplicationFactor
         // Act
 
         var response = await _client.DeleteAsync($"{BASE_ROUTE_PATH}/{Guid.Empty}");
+
+        // Assert
+
+        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+    }
+
+    #endregion
+
+    #region Test_SetToDoItemCompletionPercentage
+
+    [Fact]
+    public async Task SetToDoItemCompletionPercentage_WhenValidRequest_ShouldSetToDoItemCompletionPercentageAndReturn204NoContent()
+    {
+        // Arrange
+
+        await _dbInitializer.ConfigureDatabaseAsync();
+
+        var toDoItem = new ToDoItem
+        {
+            Id = Guid.NewGuid(),
+            Title = "Test Title",
+            Description = "Test Description",
+            ExpiryDateTimeUtc = DateTime.UtcNow.AddDays(7).AddHours(1),
+            CompletionPercentage = 12.34m
+        };
+
+        using (var scope = _factory.Services.CreateScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+
+            await db.AddAsync(toDoItem);
+            await db.SaveChangesAsync();
+        }
+
+        var command = new SetToDoItemCompletionPercentageCommand
+        {
+            CompletionPercentage = 75.00m
+        };
+
+        var content = new StringContent(
+            JsonSerializer.Serialize(command),
+            Encoding.UTF8,
+            "application/json"
+        );
+
+        // Act
+
+        var response = await _client.PatchAsync($"{BASE_ROUTE_PATH}/{toDoItem.Id}/completion-percentage", content);
+
+        // Assert
+
+        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
+
+        using (var scope = _factory.Services.CreateScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+
+            var updatedToDoItem = await db.ToDoItems.SingleOrDefaultAsync();
+
+            Assert.NotNull(updatedToDoItem);
+            Assert.Equal(command.CompletionPercentage, updatedToDoItem.CompletionPercentage);
+            Assert.Equal(toDoItem.Id, updatedToDoItem.Id);
+            Assert.Equal(toDoItem.Title, updatedToDoItem.Title);
+            Assert.Equal(toDoItem.Description, updatedToDoItem.Description);
+            Assert.Equal(toDoItem.ExpiryDateTimeUtc, updatedToDoItem.ExpiryDateTimeUtc);
+        }
+    }
+
+    [Fact]
+    public async Task SetToDoItemCompletionPercentage_WhenInvalidRequest_ShouldReturn400BadRequest()
+    {
+        // Arrange
+
+        await _dbInitializer.ConfigureDatabaseAsync();
+
+        var invalidCommand = new SetToDoItemCompletionPercentageCommand
+        {
+            CompletionPercentage = 123.456789m
+        };
+
+        var content = new StringContent(
+            JsonSerializer.Serialize(invalidCommand),
+            Encoding.UTF8,
+            "application/json"
+        );
+
+        // Act
+
+        var response = await _client.PatchAsync($"{BASE_ROUTE_PATH}/{Guid.Empty}/completion-percentage", content);
+
+        // Assert
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task SetToDoItemCompletionPercentage_WhenNonExistingToDoItem_ShouldReturn404NotFound()
+    {
+        // Arrange
+
+        await _dbInitializer.ConfigureDatabaseAsync();
+
+        var command = new SetToDoItemCompletionPercentageCommand
+        {
+            CompletionPercentage = 75.00m
+        };
+
+        var content = new StringContent(
+            JsonSerializer.Serialize(command),
+            Encoding.UTF8,
+            "application/json"
+        );
+
+        // Act
+
+        var response = await _client.PatchAsync($"{BASE_ROUTE_PATH}/{Guid.Empty}/completion-percentage", content);
 
         // Assert
 

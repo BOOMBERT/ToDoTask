@@ -5,6 +5,7 @@ using ToDoTask.Application.ToDoItems.Commands.CreateToDoItem;
 using ToDoTask.Application.ToDoItems.Queries.GetToDoItemById;
 using ToDoTask.Application.ToDoItems.Commands.UpdateToDoItem;
 using ToDoTask.Application.ToDoItems.Commands.DeleteToDoItem;
+using ToDoTask.Application.ToDoItems.Commands.SetToDoItemCompletionPercentage;
 
 namespace ToDoTask.API.Controllers;
 
@@ -82,6 +83,25 @@ public class ToDoItemsController : ControllerBase
     public async Task<IActionResult> DeleteToDoItem([FromRoute] Guid id)
     {
         var command = new DeleteToDoItemCommand(id);
+        await _mediator.Send(command);
+        return NoContent();
+    }
+
+    /// <summary>
+    /// Sets the completion percentage of an existing ToDo item with the specified identifier.
+    /// </summary>
+    /// <param name="id">The unique identifier of the ToDo item to update.</param>
+    /// <param name="command">The new completion percentage value for the ToDo item.</param>
+    /// <response code="204">The ToDo item's completion percentage was successfully updated.</response>
+    /// <response code="400">The request is invalid (e.g., validation errors).</response>
+    /// <response code="404">No ToDo item was found with the specified ID.</response>
+    [HttpPatch("{id}/completion-percentage")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> SetToDoItemCompletionPercentage([FromRoute] Guid id, [FromBody] SetToDoItemCompletionPercentageCommand command)
+    {
+        command.Id = id;
         await _mediator.Send(command);
         return NoContent();
     }
