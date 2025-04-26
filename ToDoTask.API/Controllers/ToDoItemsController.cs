@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using ToDoTask.Application.ToDoItems.Dtos;
 using ToDoTask.Application.ToDoItems.Commands.CreateToDoItem;
 using ToDoTask.Application.ToDoItems.Queries.GetToDoItemById;
+using ToDoTask.Application.ToDoItems.Commands.UpdateToDoItem;
 
 namespace ToDoTask.API.Controllers;
 
@@ -26,8 +27,7 @@ public class ToDoItemsController : ControllerBase
     /// <response code="400">The request is invalid (e.g., validation errors).</response>
     [HttpPost]
     [ProducesResponseType(StatusCodes.Status201Created)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [ProducesErrorResponseType(typeof(ValidationProblemDetails))]
+    [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> CreateToDoItem([FromBody] CreateToDoItemCommand command)
     {
         var toDoItemId = await _mediator.Send(command);
@@ -43,11 +43,29 @@ public class ToDoItemsController : ControllerBase
     /// <response code="404">No ToDo item was found with the specified ID.</response>
     [HttpGet("{id}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
-    [ProducesErrorResponseType(typeof(ProblemDetails))]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
     public async Task<ActionResult<ToDoItemDto>> GetToDoItemById([FromRoute] Guid id)
     {
         var toDoItem = await _mediator.Send(new GetToDoItemByIdQuery(id));
         return Ok(toDoItem);
+    }
+
+    /// <summary>
+    /// Updates an existing ToDo item with the specified identifier.
+    /// </summary>
+    /// <param name="id">The unique identifier of the ToDo item to be updated.</param>
+    /// <param name="command">The updated values for the ToDo item.</param>
+    /// <response code="204">The ToDo item was successfully updated.</response>
+    /// <response code="400">The request is invalid (e.g., validation errors).</response>
+    /// <response code="404">No ToDo item was found with the specified ID.</response>
+    [HttpPut("{id}")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> UpdateToDoItem([FromRoute] Guid id, [FromBody] UpdateToDoItemCommand command)
+    {
+        command.Id = id;
+        await _mediator.Send(command);
+        return NoContent();
     }
 }
