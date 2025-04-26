@@ -4,6 +4,7 @@ using ToDoTask.Application.ToDoItems.Dtos;
 using ToDoTask.Application.ToDoItems.Commands.CreateToDoItem;
 using ToDoTask.Application.ToDoItems.Queries.GetToDoItemById;
 using ToDoTask.Application.ToDoItems.Commands.UpdateToDoItem;
+using ToDoTask.Application.ToDoItems.Commands.DeleteToDoItem;
 
 namespace ToDoTask.API.Controllers;
 
@@ -65,6 +66,22 @@ public class ToDoItemsController : ControllerBase
     public async Task<IActionResult> UpdateToDoItem([FromRoute] Guid id, [FromBody] UpdateToDoItemCommand command)
     {
         command.Id = id;
+        await _mediator.Send(command);
+        return NoContent();
+    }
+
+    /// <summary>
+    /// Deletes an existing ToDo item with the specified identifier.
+    /// </summary>
+    /// <param name="id">The unique identifier of the ToDo item to be deleted.</param>
+    /// <response code="204">The ToDo item was successfully deleted.</response>
+    /// <response code="404">No ToDo item was found with the specified ID.</response>
+    [HttpDelete("{id}")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> DeleteToDoItem([FromRoute] Guid id)
+    {
+        var command = new DeleteToDoItemCommand(id);
         await _mediator.Send(command);
         return NoContent();
     }

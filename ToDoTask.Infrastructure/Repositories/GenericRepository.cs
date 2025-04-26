@@ -13,9 +13,9 @@ public class GenericRepository : IGenericRepository
         _context = context;
     }
 
-    public async Task AddAsync<T>(T entity) where T : class
+    public async Task AddAsync<TEntity>(TEntity entity) where TEntity : class
     {
-        await _context.Set<T>().AddAsync(entity);
+        await _context.Set<TEntity>().AddAsync(entity);
     }
 
     public async Task<TEntity?> GetEntityAsync<TEntity>(Guid id, bool trackChanges = true) where TEntity : class
@@ -26,6 +26,16 @@ public class GenericRepository : IGenericRepository
             query = query.AsNoTracking();
 
         return await query.FirstOrDefaultAsync();
+    }
+
+    public async Task DeleteAsync<TEntity>(Guid id) where TEntity : class
+    {
+        await _context.Set<TEntity>().Where(e => EF.Property<Guid>(e, "Id") == id).ExecuteDeleteAsync();
+    }
+
+    public async Task<bool> EntityExistsAsync<TEntity>(Guid id) where TEntity : class
+    {
+        return await _context.Set<TEntity>().AnyAsync(e => EF.Property<Guid>(e, "Id") == id);
     }
 
     public async Task<bool> SaveChangesAsync()

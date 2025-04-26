@@ -290,4 +290,66 @@ public class ToDoItemsControllerTests : IClassFixture<CustomWebApplicationFactor
     }
 
     #endregion
+
+    #region Test_DeleteToDoItem
+
+    [Fact]
+    public async Task DeleteToDoItem_WhenValidRequest_ShouldDeleteSpecifiedToDoItemAndReturn204NoContent()
+    {
+        // Arrange
+
+        await _dbInitializer.ConfigureDatabaseAsync();
+        
+        var toDoItem = new ToDoItem
+        {
+            Id = Guid.NewGuid(),
+            Title = "Test Title",
+            Description = "Test Description",
+            ExpiryDateTimeUtc = DateTime.UtcNow.AddDays(7).AddHours(1),
+            CompletionPercentage = 12.34m
+        };
+
+        using (var scope = _factory.Services.CreateScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        
+            await db.AddAsync(toDoItem);
+            await db.SaveChangesAsync();
+        }
+
+        // Act
+        
+        var response = await _client.DeleteAsync($"{BASE_ROUTE_PATH}/{toDoItem.Id}");
+        
+        // Assert
+        
+        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
+        
+        using (var scope = _factory.Services.CreateScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+
+            var deletedToDoItem = await db.ToDoItems.SingleOrDefaultAsync(t => t.Id == toDoItem.Id);
+
+            Assert.Null(deletedToDoItem);
+        }
+    }
+
+    [Fact]
+    public async Task DeleteToDoItem_WhenNonExistingToDoItem_ShouldReturn404NotFound()
+    {
+        // Arrange
+
+        await _dbInitializer.ConfigureDatabaseAsync();
+
+        // Act
+
+        var response = await _client.DeleteAsync($"{BASE_ROUTE_PATH}/{Guid.Empty}");
+
+        // Assert
+
+        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+    }
+
+    #endregion
 }
