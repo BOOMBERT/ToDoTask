@@ -105,4 +105,24 @@ public class ToDoItemsController : ControllerBase
         await _mediator.Send(command);
         return NoContent();
     }
+
+    /// <summary>
+    /// Marks the specified ToDo item as completed by setting its completion percentage to 100.
+    /// </summary>
+    /// <param name="id">The unique identifier of the ToDo item to mark as done.</param>
+    /// <response code="204">The ToDo item was successfully marked as done.</response>
+    /// <response code="404">No ToDo item was found with the specified ID.</response>
+    [HttpPatch("{id}/mark-as-done")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> MarkToDoItemAsDone([FromRoute] Guid id)
+    {
+        var command = new SetToDoItemCompletionPercentageCommand
+        {
+            Id = id,
+            CompletionPercentage = 100m
+        };
+        await _mediator.Send(command);
+        return NoContent();
+    }
 }

@@ -60,20 +60,15 @@ public class ToDoItemsControllerTests : IClassFixture<CustomWebApplicationFactor
 
         Assert.Equal(HttpStatusCode.Created, response.StatusCode);
 
-        using (var scope = _factory.Services.CreateScope())
-        {
-            var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        var createdToDoItem = await GetSingleToDoItemAsync();
 
-            var toDoItem = await db.ToDoItems.SingleOrDefaultAsync();
+        Assert.NotNull(createdToDoItem);
+        Assert.Equal(command.Title, createdToDoItem.Title);
+        Assert.Equal(command.Description, createdToDoItem.Description);
+        Assert.Equal(command.ExpiryDateTimeUtc, createdToDoItem.ExpiryDateTimeUtc);
+        Assert.Equal(command.CompletionPercentage, createdToDoItem.CompletionPercentage);
 
-            Assert.NotNull(toDoItem);
-            Assert.Equal(command.Title, toDoItem.Title);
-            Assert.Equal(command.Description, toDoItem.Description);
-            Assert.Equal(command.ExpiryDateTimeUtc, toDoItem.ExpiryDateTimeUtc);
-            Assert.Equal(command.CompletionPercentage, toDoItem.CompletionPercentage);
-
-            Assert.Equal($"http://localhost/api/todoitems/{toDoItem.Id}", response.Headers.Location?.ToString());
-        }
+        Assert.Equal($"http://localhost/api/todoitems/{createdToDoItem.Id}", response.Headers.Location?.ToString());
     }
 
     [Fact]
@@ -115,22 +110,7 @@ public class ToDoItemsControllerTests : IClassFixture<CustomWebApplicationFactor
 
         await _dbInitializer.ConfigureDatabaseAsync();
 
-        var toDoItem = new ToDoItem
-        {
-            Id = Guid.NewGuid(),
-            Title = "Test Title",
-            Description = "Test Description",
-            ExpiryDateTimeUtc = DateTime.UtcNow.AddDays(7).AddHours(1),
-            CompletionPercentage = 12.34m
-        };
-
-        using (var scope = _factory.Services.CreateScope())
-        {
-            var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-
-            await db.AddAsync(toDoItem);
-            await db.SaveChangesAsync();
-        }
+        var toDoItem = await CreateAndSaveToDoItemAsync();
 
         // Act
 
@@ -176,22 +156,7 @@ public class ToDoItemsControllerTests : IClassFixture<CustomWebApplicationFactor
 
         await _dbInitializer.ConfigureDatabaseAsync();
 
-        var toDoItem = new ToDoItem
-        {
-            Id = Guid.NewGuid(),
-            Title = "Test Title",
-            Description = "Test Description",
-            ExpiryDateTimeUtc = DateTime.UtcNow.AddDays(7).AddHours(1),
-            CompletionPercentage = 12.34m
-        };
-
-        using (var scope = _factory.Services.CreateScope())
-        {
-            var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-         
-            await db.AddAsync(toDoItem);
-            await db.SaveChangesAsync();
-        }
+        var toDoItem = await CreateAndSaveToDoItemAsync();
 
         var command = new UpdateToDoItemCommand(toDoItem.Id)
         {
@@ -215,19 +180,14 @@ public class ToDoItemsControllerTests : IClassFixture<CustomWebApplicationFactor
 
         Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
 
-        using (var scope = _factory.Services.CreateScope())
-        {
-            var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        var updatedToDoItem = await GetSingleToDoItemAsync(toDoItem.Id);
 
-            var updatedToDoItem = await db.ToDoItems.SingleOrDefaultAsync();
-
-            Assert.NotNull(updatedToDoItem);
-            Assert.Equal(toDoItem.Id, updatedToDoItem.Id);
-            Assert.Equal(command.Title, updatedToDoItem.Title);
-            Assert.Equal(command.Description, updatedToDoItem.Description);
-            Assert.Equal(command.ExpiryDateTimeUtc, updatedToDoItem.ExpiryDateTimeUtc);
-            Assert.Equal(command.CompletionPercentage, updatedToDoItem.CompletionPercentage);
-        }
+        Assert.NotNull(updatedToDoItem);
+        Assert.Equal(toDoItem.Id, updatedToDoItem.Id);
+        Assert.Equal(command.Title, updatedToDoItem.Title);
+        Assert.Equal(command.Description, updatedToDoItem.Description);
+        Assert.Equal(command.ExpiryDateTimeUtc, updatedToDoItem.ExpiryDateTimeUtc);
+        Assert.Equal(command.CompletionPercentage, updatedToDoItem.CompletionPercentage);
     }
 
     [Fact]
@@ -300,23 +260,8 @@ public class ToDoItemsControllerTests : IClassFixture<CustomWebApplicationFactor
         // Arrange
 
         await _dbInitializer.ConfigureDatabaseAsync();
-        
-        var toDoItem = new ToDoItem
-        {
-            Id = Guid.NewGuid(),
-            Title = "Test Title",
-            Description = "Test Description",
-            ExpiryDateTimeUtc = DateTime.UtcNow.AddDays(7).AddHours(1),
-            CompletionPercentage = 12.34m
-        };
 
-        using (var scope = _factory.Services.CreateScope())
-        {
-            var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-        
-            await db.AddAsync(toDoItem);
-            await db.SaveChangesAsync();
-        }
+        var toDoItem = await CreateAndSaveToDoItemAsync();
 
         // Act
         
@@ -326,14 +271,9 @@ public class ToDoItemsControllerTests : IClassFixture<CustomWebApplicationFactor
         
         Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
         
-        using (var scope = _factory.Services.CreateScope())
-        {
-            var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        var deletedToDoItem = await GetSingleToDoItemAsync(toDoItem.Id);
 
-            var deletedToDoItem = await db.ToDoItems.SingleOrDefaultAsync(t => t.Id == toDoItem.Id);
-
-            Assert.Null(deletedToDoItem);
-        }
+        Assert.Null(deletedToDoItem);
     }
 
     [Fact]
@@ -363,22 +303,7 @@ public class ToDoItemsControllerTests : IClassFixture<CustomWebApplicationFactor
 
         await _dbInitializer.ConfigureDatabaseAsync();
 
-        var toDoItem = new ToDoItem
-        {
-            Id = Guid.NewGuid(),
-            Title = "Test Title",
-            Description = "Test Description",
-            ExpiryDateTimeUtc = DateTime.UtcNow.AddDays(7).AddHours(1),
-            CompletionPercentage = 12.34m
-        };
-
-        using (var scope = _factory.Services.CreateScope())
-        {
-            var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-
-            await db.AddAsync(toDoItem);
-            await db.SaveChangesAsync();
-        }
+        var toDoItem = await CreateAndSaveToDoItemAsync();
 
         var command = new SetToDoItemCompletionPercentageCommand
         {
@@ -399,19 +324,14 @@ public class ToDoItemsControllerTests : IClassFixture<CustomWebApplicationFactor
 
         Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
 
-        using (var scope = _factory.Services.CreateScope())
-        {
-            var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        var updatedToDoItem = await GetSingleToDoItemAsync(toDoItem.Id);
 
-            var updatedToDoItem = await db.ToDoItems.SingleOrDefaultAsync();
-
-            Assert.NotNull(updatedToDoItem);
-            Assert.Equal(command.CompletionPercentage, updatedToDoItem.CompletionPercentage);
-            Assert.Equal(toDoItem.Id, updatedToDoItem.Id);
-            Assert.Equal(toDoItem.Title, updatedToDoItem.Title);
-            Assert.Equal(toDoItem.Description, updatedToDoItem.Description);
-            Assert.Equal(toDoItem.ExpiryDateTimeUtc, updatedToDoItem.ExpiryDateTimeUtc);
-        }
+        Assert.NotNull(updatedToDoItem);
+        Assert.Equal(command.CompletionPercentage, updatedToDoItem.CompletionPercentage);
+        Assert.Equal(toDoItem.Id, updatedToDoItem.Id);
+        Assert.Equal(toDoItem.Title, updatedToDoItem.Title);
+        Assert.Equal(toDoItem.Description, updatedToDoItem.Description);
+        Assert.Equal(toDoItem.ExpiryDateTimeUtc, updatedToDoItem.ExpiryDateTimeUtc);
     }
 
     [Fact]
@@ -466,6 +386,95 @@ public class ToDoItemsControllerTests : IClassFixture<CustomWebApplicationFactor
         // Assert
 
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+    }
+
+    #endregion
+
+    #region Test_MarkToDoItemAsDone
+
+    [Fact]
+    public async Task MarkToDoItemAsDone_WhenValidRequest_ShouldSetToDoItemCompletionPercentageTo100AndReturn204NoContent()
+    {
+        // Arrange
+
+        await _dbInitializer.ConfigureDatabaseAsync();
+
+        var toDoItem = await CreateAndSaveToDoItemAsync();
+
+        // Act
+
+        var response = await _client.PatchAsync($"{BASE_ROUTE_PATH}/{toDoItem.Id}/mark-as-done", null);
+
+        // Assert
+
+        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
+
+        var updatedToDoItem = await GetSingleToDoItemAsync(toDoItem.Id);
+
+        Assert.NotNull(updatedToDoItem);
+        Assert.Equal(100m, updatedToDoItem.CompletionPercentage);
+        Assert.Equal(toDoItem.Id, updatedToDoItem.Id);
+        Assert.Equal(toDoItem.Title, updatedToDoItem.Title);
+        Assert.Equal(toDoItem.Description, updatedToDoItem.Description);
+        Assert.Equal(toDoItem.ExpiryDateTimeUtc, updatedToDoItem.ExpiryDateTimeUtc);
+    }
+
+    [Fact]
+    public async Task MarkToDoItemAsDone_WhenNonExistingToDoItem_ShouldReturn404NotFound()
+    {
+        // Arrange
+
+        await _dbInitializer.ConfigureDatabaseAsync();
+
+        // Act
+
+        var response = await _client.PatchAsync($"{BASE_ROUTE_PATH}/{Guid.Empty}/mark-as-done", null);
+
+        // Assert
+
+        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+    }
+
+    #endregion
+
+    #region Test_Data
+
+    private async Task<ToDoItem> CreateAndSaveToDoItemAsync(
+        string title = "Test Title",
+        string description = "Test Description",
+        decimal completionPercentage = 12.34m,
+        DateTime? expiryDateTimeUtc = null)
+    {
+        var toDoItem = new ToDoItem
+        {
+            Id = Guid.NewGuid(),
+            Title = title,
+            Description = description,
+            ExpiryDateTimeUtc = expiryDateTimeUtc ?? DateTime.UtcNow.AddDays(7).AddMinutes(30),
+            CompletionPercentage = completionPercentage
+        };
+
+        using (var scope = _factory.Services.CreateScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+
+            await db.AddAsync(toDoItem);
+            await db.SaveChangesAsync();
+        }
+
+        return toDoItem;
+    }
+
+    private async Task<ToDoItem?> GetSingleToDoItemAsync(Guid? id = null)
+    {
+        using (var scope = _factory.Services.CreateScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+
+            return id.HasValue
+                ? await db.ToDoItems.SingleOrDefaultAsync(t => t.Id == id.Value)
+                : await db.ToDoItems.SingleOrDefaultAsync();
+        }
     }
 
     #endregion
