@@ -66,6 +66,22 @@ public class ToDoItemValidationExtensionsTests
             .WithErrorMessage("Title cannot exceed 128 characters.");
     }
 
+    [Theory]
+    [InlineData("")]
+    [InlineData("  ")]
+    [InlineData("   ")]
+    public void IsValidToDoItemTitle_WhenTitleIsEmptyOrContainsOnlySpaces_ShouldHaveValidationError(string emptyOrWhitespaceToDoItemTitle)
+    {
+        // Act
+
+        var result = GetIsValidToDoItemTitleValidator().TestValidate(emptyOrWhitespaceToDoItemTitle);
+
+        // Assert
+
+        result.ShouldHaveValidationErrorFor(x => x)
+            .WithErrorMessage("Title cannot be empty or consist only of whitespace.");
+    }
+
     #endregion
 
     #region Test_IsValidToDoItemDescription
@@ -107,6 +123,21 @@ public class ToDoItemValidationExtensionsTests
 
         result.ShouldHaveValidationErrorFor(x => x)
             .WithErrorMessage("Description cannot exceed 512 characters.");
+    }
+
+    [Theory]
+    [InlineData(" ")]
+    [InlineData("  ")]
+    public void IsValidToDoItemDescription_WhenDescriptionContainsOnlySpaces_ShouldHaveValidationError(string whitespaceToDoItemDescription)
+    {
+        // Act
+
+        var result = GetIsValidToDoItemDescriptionValidator().TestValidate(whitespaceToDoItemDescription);
+        
+        // Assert
+        
+        result.ShouldHaveValidationErrorFor(x => x)
+            .WithErrorMessage("Description cannot be only whitespace if provided.");
     }
 
     #endregion
