@@ -10,14 +10,14 @@ public static class PaginationAndSortingValidationExtensions
         where T : IPaginationAndSortingQuery
     {
         return ruleBuilder
-            .GreaterThanOrEqualTo(1).WithMessage("Page number must be greater than or equal to 1");
+            .GreaterThanOrEqualTo(1).WithMessage("Page number must be greater than or equal to 1.");
     }
 
     public static IRuleBuilderOptions<T, int> IsValidPageSize<T>(this IRuleBuilder<T, int> ruleBuilder, int[] allowedPageSizes) 
         where T : IPaginationAndSortingQuery
     {
         return ruleBuilder
-            .Must(ps => allowedPageSizes.Contains(ps)).WithMessage($"Page size must be in [{string.Join(",", allowedPageSizes)}]");
+            .Must(ps => allowedPageSizes.Contains(ps)).WithMessage($"Page size must be in [{string.Join(",", allowedPageSizes)}].");
     }
 
     public static IRuleBuilderOptions<T, string?> IsValidSortBy<T>(this IRuleBuilder<T, string?> ruleBuilder, string[] allowedSortByColumnNames) 

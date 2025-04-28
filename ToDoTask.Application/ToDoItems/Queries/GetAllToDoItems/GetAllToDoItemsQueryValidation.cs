@@ -6,8 +6,8 @@ namespace ToDoTask.Application.ToDoItems.Queries.GetAllToDoItems;
 
 public class GetAllToDoItemsQueryValidation : AbstractValidator<GetAllToDoItemsQuery>
 {
-    private int[] allowedPageSizes = { 5, 10, 20, 50 };
-    private string[] allowedSortByColumnNames = { 
+    private readonly int[] allowedPageSizes = { 5, 10, 20, 50 };
+    private readonly string[] allowedSortByColumnNames = { 
         nameof(ToDoItem.Title),
         nameof(ToDoItem.Description),
         nameof(ToDoItem.ExpiryDateTimeUtc), 
