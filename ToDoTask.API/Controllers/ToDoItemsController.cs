@@ -6,6 +6,8 @@ using ToDoTask.Application.ToDoItems.Queries.GetToDoItemById;
 using ToDoTask.Application.ToDoItems.Commands.UpdateToDoItem;
 using ToDoTask.Application.ToDoItems.Commands.DeleteToDoItem;
 using ToDoTask.Application.ToDoItems.Commands.SetToDoItemCompletionPercentage;
+using ToDoTask.Application.ToDoItems.Queries.GetAllToDoItems;
+using ToDoTask.Application.Common;
 
 namespace ToDoTask.API.Controllers;
 
@@ -50,6 +52,22 @@ public class ToDoItemsController : ControllerBase
     {
         var toDoItem = await _mediator.Send(new GetToDoItemByIdQuery(id));
         return Ok(toDoItem);
+    }
+
+    /// <summary>
+    /// Retrieves a paginated and optionally sorted list of ToDo items, along with pagination info, based on the query parameters.
+    /// </summary>
+    /// <param name="query">The values used to paginate and optionally sort the list of ToDo items.</param>
+    /// <returns>The requested paginated and optionally sorted list of ToDo items matching the query criteria, along with pagination info.</returns>
+    /// <response code="200">The list of ToDo items was successfully retrieved.</response>
+    /// <response code="400">The request is invalid (e.g., validation errors).</response>
+    [HttpGet]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
+    public async Task<ActionResult<PagedResponse<ToDoItemDto>>> GetAllToDoItems([FromQuery] GetAllToDoItemsQuery query)
+    {
+        var pagedToDoItems = await _mediator.Send(query);
+        return Ok(pagedToDoItems);
     }
 
     /// <summary>
