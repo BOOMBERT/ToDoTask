@@ -4,12 +4,16 @@ using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using System.Data.Common;
+using ToDoTask.API.Tests.Helpers;
+using ToDoTask.Application.Interfaces;
 using ToDoTask.Infrastructure.Persistence;
 
 namespace ToDoTask.API.Tests;
 
 public class CustomWebApplicationFactory<TProgram> : WebApplicationFactory<TProgram> where TProgram : class
 {
+    public DateTime? FixedUtcNow { get; set; }
+
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
         base.ConfigureWebHost(builder);
@@ -23,6 +27,12 @@ public class CustomWebApplicationFactory<TProgram> : WebApplicationFactory<TProg
 
             var dbConnectionDescriptor = services.SingleOrDefault(d => d.ServiceType == typeof(DbConnection));
             if (dbConnectionDescriptor != null) services.Remove(dbConnectionDescriptor);
+
+            var clockDescriptor = services.SingleOrDefault(d => d.ServiceType == typeof(IClock));
+            if (clockDescriptor != null) services.Remove(clockDescriptor);
+
+            var fixedTime = FixedUtcNow ?? DateTime.UtcNow;
+            services.AddSingleton<IClock>(new FixedClock(fixedTime));
 
             services.AddSingleton<DbConnection>(container =>
             {

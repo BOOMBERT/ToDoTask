@@ -1,13 +1,16 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.WebUtilities;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using System.Net;
 using System.Net.Http.Json;
 using System.Text;
 using System.Text.Json;
+using ToDoTask.Application.Common;
 using ToDoTask.Application.ToDoItems.Commands.CreateToDoItem;
 using ToDoTask.Application.ToDoItems.Commands.SetToDoItemCompletionPercentage;
 using ToDoTask.Application.ToDoItems.Commands.UpdateToDoItem;
 using ToDoTask.Application.ToDoItems.Dtos;
+using ToDoTask.Domain.Constants;
 using ToDoTask.Domain.Entities;
 using ToDoTask.Infrastructure.Persistence;
 using Xunit;
@@ -20,10 +23,13 @@ public class ToDoItemsControllerTests : IClassFixture<CustomWebApplicationFactor
     private readonly HttpClient _client;
     private readonly TestDatabaseInitializer _dbInitializer;
 
-    private const string BASE_ROUTE_PATH = "/api/todoitems";
+    private const string BaseRoutePath = "/api/todoitems";
+    private const string PacificHonoluluTimeZoneId = "Pacific/Honolulu"; // Constant difference of -10 hours from UTC
+    private readonly DateTime fixedUtcNow = new DateTime(2025, 4, 1, 5, 30, 15, DateTimeKind.Utc); // 01.04.2025 05:30:15 UTC | 31.03.2025 19:30:15 HST
 
     public ToDoItemsControllerTests(CustomWebApplicationFactory<Program> factory)
     {
+        factory.FixedUtcNow = fixedUtcNow;
         _factory = factory;
         _client = factory.CreateClient();
         _dbInitializer = new TestDatabaseInitializer(factory.Services);
@@ -54,7 +60,7 @@ public class ToDoItemsControllerTests : IClassFixture<CustomWebApplicationFactor
 
         // Act
 
-        var response = await _client.PostAsync(BASE_ROUTE_PATH, content);
+        var response = await _client.PostAsync(BaseRoutePath, content);
 
         // Assert
 
@@ -80,7 +86,7 @@ public class ToDoItemsControllerTests : IClassFixture<CustomWebApplicationFactor
         {
             Title = "",
             Description = new string('A', 513),
-            ExpiryDateTimeUtc = DateTime.UtcNow.AddDays(-1),
+            ExpiryDateTimeUtc = fixedUtcNow.AddDays(-1),
             CompletionPercentage = 123.456789m
         };
 
@@ -92,7 +98,7 @@ public class ToDoItemsControllerTests : IClassFixture<CustomWebApplicationFactor
 
         // Act
 
-        var response = await _client.PostAsync(BASE_ROUTE_PATH, content);
+        var response = await _client.PostAsync(BaseRoutePath, content);
 
         // Assert
 
@@ -114,7 +120,7 @@ public class ToDoItemsControllerTests : IClassFixture<CustomWebApplicationFactor
 
         // Act
 
-        var response = await _client.GetAsync($"{BASE_ROUTE_PATH}/{toDoItem.Id}");
+        var response = await _client.GetAsync($"{BaseRoutePath}/{toDoItem.Id}");
         var toDoItemDtoFromResponse = await response.Content.ReadFromJsonAsync<ToDoItemDto>();
 
         // Assert
@@ -138,7 +144,7 @@ public class ToDoItemsControllerTests : IClassFixture<CustomWebApplicationFactor
 
         // Act
 
-        var response = await _client.GetAsync($"{BASE_ROUTE_PATH}/{Guid.Empty}");
+        var response = await _client.GetAsync($"{BaseRoutePath}/{Guid.Empty}");
 
         // Assert
 
@@ -174,7 +180,7 @@ public class ToDoItemsControllerTests : IClassFixture<CustomWebApplicationFactor
 
         // Act
 
-        var response = await _client.PutAsync($"{BASE_ROUTE_PATH}/{toDoItem.Id}", content);
+        var response = await _client.PutAsync($"{BaseRoutePath}/{toDoItem.Id}", content);
 
         // Assert
 
@@ -201,7 +207,7 @@ public class ToDoItemsControllerTests : IClassFixture<CustomWebApplicationFactor
         {
             Title = "",
             Description = new string('A', 513),
-            ExpiryDateTimeUtc = DateTime.UtcNow.AddDays(-1),
+            ExpiryDateTimeUtc = fixedUtcNow.AddDays(-1),
             CompletionPercentage = 123.456789m
         };
 
@@ -213,7 +219,7 @@ public class ToDoItemsControllerTests : IClassFixture<CustomWebApplicationFactor
 
         // Act
         
-        var response = await _client.PutAsync($"{BASE_ROUTE_PATH}/{invalidCommand.Id}", content);
+        var response = await _client.PutAsync($"{BaseRoutePath}/{invalidCommand.Id}", content);
         
         // Assert
 
@@ -243,7 +249,7 @@ public class ToDoItemsControllerTests : IClassFixture<CustomWebApplicationFactor
         
         // Act
         
-        var response = await _client.PutAsync($"{BASE_ROUTE_PATH}/{command.Id}", content);
+        var response = await _client.PutAsync($"{BaseRoutePath}/{command.Id}", content);
         
         // Assert
         
@@ -265,7 +271,7 @@ public class ToDoItemsControllerTests : IClassFixture<CustomWebApplicationFactor
 
         // Act
         
-        var response = await _client.DeleteAsync($"{BASE_ROUTE_PATH}/{toDoItem.Id}");
+        var response = await _client.DeleteAsync($"{BaseRoutePath}/{toDoItem.Id}");
         
         // Assert
         
@@ -285,7 +291,7 @@ public class ToDoItemsControllerTests : IClassFixture<CustomWebApplicationFactor
 
         // Act
 
-        var response = await _client.DeleteAsync($"{BASE_ROUTE_PATH}/{Guid.Empty}");
+        var response = await _client.DeleteAsync($"{BaseRoutePath}/{Guid.Empty}");
 
         // Assert
 
@@ -318,7 +324,7 @@ public class ToDoItemsControllerTests : IClassFixture<CustomWebApplicationFactor
 
         // Act
 
-        var response = await _client.PatchAsync($"{BASE_ROUTE_PATH}/{toDoItem.Id}/completion-percentage", content);
+        var response = await _client.PatchAsync($"{BaseRoutePath}/{toDoItem.Id}/completion-percentage", content);
 
         // Assert
 
@@ -354,7 +360,7 @@ public class ToDoItemsControllerTests : IClassFixture<CustomWebApplicationFactor
 
         // Act
 
-        var response = await _client.PatchAsync($"{BASE_ROUTE_PATH}/{Guid.Empty}/completion-percentage", content);
+        var response = await _client.PatchAsync($"{BaseRoutePath}/{Guid.Empty}/completion-percentage", content);
 
         // Assert
 
@@ -381,7 +387,7 @@ public class ToDoItemsControllerTests : IClassFixture<CustomWebApplicationFactor
 
         // Act
 
-        var response = await _client.PatchAsync($"{BASE_ROUTE_PATH}/{Guid.Empty}/completion-percentage", content);
+        var response = await _client.PatchAsync($"{BaseRoutePath}/{Guid.Empty}/completion-percentage", content);
 
         // Assert
 
@@ -403,7 +409,7 @@ public class ToDoItemsControllerTests : IClassFixture<CustomWebApplicationFactor
 
         // Act
 
-        var response = await _client.PatchAsync($"{BASE_ROUTE_PATH}/{toDoItem.Id}/mark-as-done", null);
+        var response = await _client.PatchAsync($"{BaseRoutePath}/{toDoItem.Id}/mark-as-done", null);
 
         // Assert
 
@@ -428,11 +434,254 @@ public class ToDoItemsControllerTests : IClassFixture<CustomWebApplicationFactor
 
         // Act
 
-        var response = await _client.PatchAsync($"{BASE_ROUTE_PATH}/{Guid.Empty}/mark-as-done", null);
+        var response = await _client.PatchAsync($"{BaseRoutePath}/{Guid.Empty}/mark-as-done", null);
 
         // Assert
 
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+    }
+
+    #endregion
+
+    #region Test_GetAllToDoItems
+
+    [Fact]
+    public async Task GetAllToDoItems_WhenNoFiltersAndNoSort_ShouldReturnAllToDoItemsWithPaginationAnd200Ok()
+    {
+        // Arrange
+
+        await _dbInitializer.ConfigureDatabaseAsync();
+
+        var totalToDoItems = 5 + 4 + 3 + 2;
+        var pageSize = 20;
+        var toDoItemsDtos = await CreateAndSaveToDoItemsForSpecifiedDateRangeAsync(5, 4, 3, 2);
+
+        var queryParameters = new Dictionary<string, string?>
+        {
+            ["PageNumber"] = "1",
+            ["PageSize"] = pageSize.ToString(),
+        };
+
+        var url = QueryHelpers.AddQueryString(BaseRoutePath, queryParameters);
+
+        // Act
+
+        var response = await _client.GetAsync(url);
+        var toDoItemsDtosAndPaginationInfoFromResponse = await response.Content.ReadFromJsonAsync<PagedResponse<ToDoItemDto>>();
+        var (toDoItemsDtosFromResponse, paginationInfoFromResponse) = 
+            (toDoItemsDtosAndPaginationInfoFromResponse?.Data, toDoItemsDtosAndPaginationInfoFromResponse?.Pagination);
+
+        // Assert
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+        Assert.NotNull(toDoItemsDtosFromResponse);
+        Assert.NotNull(paginationInfoFromResponse);
+
+        Assert.Equal(totalToDoItems, toDoItemsDtosFromResponse.Count());
+        
+        Assert.Equal(1, paginationInfoFromResponse.CurrentPage);
+        Assert.Equal(pageSize, paginationInfoFromResponse.PageSize);
+        Assert.Equal(1, paginationInfoFromResponse.TotalPageCount);
+        Assert.Equal(totalToDoItems, paginationInfoFromResponse.TotalItemCount);
+
+        Assert.Equal(
+            toDoItemsDtos.Select(t => t.Id).OrderBy(id => id), 
+            toDoItemsDtosFromResponse.Select(t => t.Id).OrderBy(id => id)
+        );
+    }
+
+    [Theory]
+    [InlineData(DateTimeRange.Today)]
+    [InlineData(DateTimeRange.Tomorrow)]
+    [InlineData(DateTimeRange.ThisWeek)]
+    public async Task GetAllToDoItems_WhenFilteredByDateTimeRangeAndValidTimeZone_ShouldReturnExpectedItemsWithPaginationAnd200Ok(DateTimeRange dateTimeRange)
+    {
+        // Arrange
+
+        await _dbInitializer.ConfigureDatabaseAsync();
+
+        var pageSize = 20;
+        var toDoItemsDtos = await CreateAndSaveToDoItemsForSpecifiedDateRangeAsync(5, 4, 3, 2);
+
+        var queryParameters = new Dictionary<string, string?>
+        {
+            ["PageNumber"] = "1",
+            ["PageSize"] = pageSize.ToString(),
+            ["DateTimeRangeFilter"] = dateTimeRange.ToString(),
+            ["TimeZoneId"] = PacificHonoluluTimeZoneId
+        };
+
+        var url = QueryHelpers.AddQueryString(BaseRoutePath, queryParameters);
+
+        // Act
+
+        var response = await _client.GetAsync(url);
+        var toDoItemsDtosAndPaginationInfoFromResponse = await response.Content.ReadFromJsonAsync<PagedResponse<ToDoItemDto>>();
+        var (toDoItemsDtosFromResponse, paginationInfoFromResponse) =
+            (toDoItemsDtosAndPaginationInfoFromResponse?.Data, toDoItemsDtosAndPaginationInfoFromResponse?.Pagination);
+
+        // Assert
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+        Assert.NotNull(toDoItemsDtosFromResponse);
+        Assert.NotNull(paginationInfoFromResponse);
+
+        var allToDoItemsIdsInDb = toDoItemsDtos.Select(t => t.Id);
+
+        if (dateTimeRange == DateTimeRange.Today)
+        {
+            Assert.Equal(5, toDoItemsDtosFromResponse.Count());
+            Assert.Equal(5, paginationInfoFromResponse.TotalItemCount);
+
+            Assert.True(toDoItemsDtosFromResponse.All(t => t.Title.StartsWith("Today") && allToDoItemsIdsInDb.Contains(t.Id)));
+        } 
+        else if (dateTimeRange == DateTimeRange.Tomorrow)
+        {
+            Assert.Equal(4, toDoItemsDtosFromResponse.Count());
+            Assert.Equal(4, paginationInfoFromResponse.TotalItemCount);
+
+            Assert.True(toDoItemsDtosFromResponse.All(t => t.Title.StartsWith("Tomorrow") && allToDoItemsIdsInDb.Contains(t.Id)));
+        }
+        else if (dateTimeRange == DateTimeRange.ThisWeek)
+        {
+            Assert.Equal(12, toDoItemsDtosFromResponse.Count());
+            Assert.Equal(12, paginationInfoFromResponse.TotalItemCount);
+
+            Assert.True(toDoItemsDtosFromResponse.All(t => 
+                (t.Title.StartsWith("Today") || t.Title.StartsWith("Tomorrow") || t.Title.StartsWith("This Week")) && 
+                allToDoItemsIdsInDb.Contains(t.Id))
+            );
+        }
+
+        Assert.Equal(1, paginationInfoFromResponse.CurrentPage);
+        Assert.Equal(pageSize, paginationInfoFromResponse.PageSize);
+        Assert.Equal(1, paginationInfoFromResponse.TotalPageCount);
+    }
+
+    [Fact]
+    public async Task GetAllToDoItems_WhenInvalidQuery_ShouldReturn400BadRequest()
+    {
+        // Arrange
+
+        var queryParameters = new Dictionary<string, string?>
+        {
+            ["PageNumber"] = "0",
+            ["PageSize"] = "0",
+            ["SearchPhrase"] = "     ",
+            ["SortBy"] = "Invalid SortBy",
+            ["TimeZoneId"] = "Invalid/TimeZoneId",
+        };
+
+        var url = QueryHelpers.AddQueryString(BaseRoutePath, queryParameters);
+
+        // Act
+
+        var response = await _client.GetAsync(url);
+
+        // Assert
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task GetAllToDoItems_WhenSortDescByExpiryDateTimeUtcAndNoFilters_ShouldReturnSortedDescAllToDoItemsWithPaginationAnd200Ok()
+    {
+        // Arrange
+
+        await _dbInitializer.ConfigureDatabaseAsync();
+
+        var pageSize = 20;
+        var toDoItemsDtos = await CreateAndSaveToDoItemsForSpecifiedDateRangeAsync(5, 4, 3, 2);
+
+        var queryParameters = new Dictionary<string, string?>
+        {
+            ["PageNumber"] = "1",
+            ["PageSize"] = pageSize.ToString(),
+            ["SortBy"] = "ExpiryDateTimeUtc",
+            ["SortDirection"] = SortDirection.Descending.ToString()
+        };
+
+        var url = QueryHelpers.AddQueryString(BaseRoutePath, queryParameters);
+
+        // Act
+
+        var response = await _client.GetAsync(url);
+        var toDoItemsDtosAndPaginationInfoFromResponse = await response.Content.ReadFromJsonAsync<PagedResponse<ToDoItemDto>>();
+        var (toDoItemsDtosFromResponse, paginationInfoFromResponse) =
+            (toDoItemsDtosAndPaginationInfoFromResponse?.Data, toDoItemsDtosAndPaginationInfoFromResponse?.Pagination);
+
+        // Assert
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+        Assert.NotNull(toDoItemsDtosFromResponse);
+        Assert.NotNull(paginationInfoFromResponse);
+
+        Assert.Equal(14, toDoItemsDtosFromResponse.Count());
+
+        Assert.Equal(14, paginationInfoFromResponse.TotalItemCount);
+        Assert.Equal(1, paginationInfoFromResponse.CurrentPage);
+        Assert.Equal(pageSize, paginationInfoFromResponse.PageSize);
+        Assert.Equal(1, paginationInfoFromResponse.TotalPageCount);
+
+        Assert.Equal(
+            toDoItemsDtos.Select(t => t.Id).OrderBy(id => id),
+            toDoItemsDtosFromResponse.Select(t => t.Id).OrderBy(id => id)
+        );
+
+        Assert.Equal(
+            toDoItemsDtos.Select(t => t.ExpiryDateTimeUtc).OrderByDescending(dt => dt),
+            toDoItemsDtosFromResponse.Select(t => t.ExpiryDateTimeUtc)
+        );
+    }
+
+    [Fact]
+    public async Task GetAllToDoItems_WhenSearchPhraseMatchesAndMultiplePages_ShouldReturnMatchingItemsWithPaginationAnd200Ok()
+    {
+        // Arrange
+
+        await _dbInitializer.ConfigureDatabaseAsync();
+
+        var pageSize = 5;
+        var toDoItemsDtos = await CreateAndSaveToDoItemsForSpecifiedDateRangeAsync(5, 4, 7, 2);
+
+        var queryParameters = new Dictionary<string, string?>
+        {
+            ["PageNumber"] = "2",
+            ["PageSize"] = pageSize.ToString(),
+            ["SearchPhrase"] = "This Week"
+        };
+
+        var url = QueryHelpers.AddQueryString(BaseRoutePath, queryParameters);
+
+        // Act
+
+        var response = await _client.GetAsync(url);
+        var toDoItemsDtosAndPaginationInfoFromResponse = await response.Content.ReadFromJsonAsync<PagedResponse<ToDoItemDto>>();
+        var (toDoItemsDtosFromResponse, paginationInfoFromResponse) =
+            (toDoItemsDtosAndPaginationInfoFromResponse?.Data, toDoItemsDtosAndPaginationInfoFromResponse?.Pagination);
+
+        // Assert
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+        Assert.NotNull(toDoItemsDtosFromResponse);
+        Assert.NotNull(paginationInfoFromResponse);
+
+        Assert.Equal(2, toDoItemsDtosFromResponse.Count());
+
+        Assert.Equal(7, paginationInfoFromResponse.TotalItemCount);
+        Assert.Equal(2, paginationInfoFromResponse.CurrentPage);
+        Assert.Equal(pageSize, paginationInfoFromResponse.PageSize);
+        Assert.Equal(2, paginationInfoFromResponse.TotalPageCount);
+
+        var allToDoItemsIdsInDb = toDoItemsDtos.Select(t => t.Id);
+        Assert.True(toDoItemsDtosFromResponse.All(t => 
+            (t.Title.StartsWith("This Week") || t.Description.StartsWith("This Week")) && 
+            allToDoItemsIdsInDb.Contains(t.Id))
+        );
     }
 
     #endregion
@@ -475,6 +724,100 @@ public class ToDoItemsControllerTests : IClassFixture<CustomWebApplicationFactor
                 ? await db.ToDoItems.SingleOrDefaultAsync(t => t.Id == id.Value)
                 : await db.ToDoItems.SingleOrDefaultAsync();
         }
+    }
+
+    private async Task<IEnumerable<ToDoItem>> CreateAndSaveToDoItemsForSpecifiedDateRangeAsync(int today, int tomorrow, int thisWeekAddition, int notThisWeek)
+    {
+        var random = new Random();
+
+        var toDoItems = new List<ToDoItem>();
+
+        var todayMaxNegativeHoursOffset = -19; // 31.03.2025 19:30:15 HST - 19 hours = 31.03.2025 00:30:15 HST
+        var todayMaxPositiveHoursOffset = 4; // 31.03.2025 19:30:15 HST + 4 hours = 31.03.2025 23:30:15 HST
+        for (var i = 1; i <= today; i++)
+        {
+            toDoItems.Add(new ToDoItem
+            {
+                Id = Guid.NewGuid(),
+                Title = $"Today Test Title {i}",
+                Description = $"Today Test Description {i}",
+                ExpiryDateTimeUtc = GetRandomDateTimeUtcWithLittleAdditionalOffset(random, fixedUtcNow, todayMaxNegativeHoursOffset, todayMaxPositiveHoursOffset),
+                CompletionPercentage = GetRandomCompletionPercentage(random)
+            });
+        }
+
+        var tomorrowMinPositiveHoursOffset = 5; // 31.03.2025 19:30:15 HST + 5 hours = 01.04.2025 00:30:15 HST
+        var tomorrowMaxPositiveHoursOffset = 28; // 31.03.2025 19:30:15 HST + 28 hours = 01.04.2025 23:30:15 HST
+        for (var i = 1; i <= tomorrow; i++)
+        {
+            toDoItems.Add(new ToDoItem
+            {
+                Id = Guid.NewGuid(),
+                Title = $"Tomorrow Test Title {i}",
+                Description = $"Tomorrow Test Description {i}",
+                ExpiryDateTimeUtc = GetRandomDateTimeUtcWithLittleAdditionalOffset(random, fixedUtcNow, tomorrowMinPositiveHoursOffset, tomorrowMaxPositiveHoursOffset),
+                CompletionPercentage = GetRandomCompletionPercentage(random)
+            });
+        }
+
+        var thisWeekMinPositiveHoursOffset = 29; // 31.03.2025 19:30:15 HST + 29 hours = 02.04.2025 00:30:15 HST
+        var thisWeekMaxPositiveHoursOffset = 148; // 31.03.2025 19:30:15 HST + 148 hours = 06.04.2025 23:30:15 HST
+        for (var i = 1; i <= thisWeekAddition; i++)
+        {
+            toDoItems.Add(new ToDoItem
+            {
+                Id = Guid.NewGuid(),
+                Title = $"This Week Test Title {i}",
+                Description = $"This Week Test Description {i}",
+                ExpiryDateTimeUtc = GetRandomDateTimeUtcWithLittleAdditionalOffset(random, fixedUtcNow, thisWeekMinPositiveHoursOffset, thisWeekMaxPositiveHoursOffset),
+                CompletionPercentage = GetRandomCompletionPercentage(random)
+            });
+        }
+
+        for (var i = 1; i <= notThisWeek; i++)
+        {
+            int daysOffset;
+            if (random.Next(2) == 0)
+            {
+                daysOffset = random.Next(-1000, -7);
+            }
+            else
+            {
+                daysOffset = random.Next(8, 1001);
+            }
+
+            toDoItems.Add(new ToDoItem
+            {
+                Id = Guid.NewGuid(),
+                Title = $"More Than Week Test Title {i}",
+                Description = $"More Than Week Test Description {i}",
+                ExpiryDateTimeUtc = fixedUtcNow.AddDays(daysOffset),
+                CompletionPercentage = GetRandomCompletionPercentage(random)
+            });
+        }
+
+        using (var scope = _factory.Services.CreateScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+
+            await db.AddRangeAsync(toDoItems);
+            await db.SaveChangesAsync();
+        }
+
+        return toDoItems;
+    }
+
+    private DateTime GetRandomDateTimeUtcWithLittleAdditionalOffset(Random random, DateTime baseTime, int minOffsetHours, int maxOffsetHours)
+    {
+        return DateTime.SpecifyKind(baseTime
+            .AddHours(random.Next(minOffsetHours, maxOffsetHours + 1))
+            .AddMinutes(random.Next(-15, 16))
+            .AddSeconds(random.Next(-60, 61)), DateTimeKind.Utc);
+    }
+
+    private decimal GetRandomCompletionPercentage(Random random)
+    {
+        return Math.Round((decimal)(random.NextDouble() * 100), 2);
     }
 
     #endregion

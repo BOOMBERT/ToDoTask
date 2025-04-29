@@ -5,9 +5,9 @@ public class PagedResponse<T>
     public IEnumerable<T> Data { get; set; }
     public PaginationInfo Pagination { get; set; }
 
-    public PagedResponse(IEnumerable<T> data, PaginationInfo paginationInfo)
+    public PagedResponse(IEnumerable<T> Data, PaginationInfo Pagination)
     {
-        Data = data;
-        Pagination = paginationInfo;
+        this.Data = Data;
+        this.Pagination = Pagination;
     }
 }
