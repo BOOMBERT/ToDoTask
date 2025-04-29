@@ -30,5 +30,38 @@ public class GetAllToDoItemsQueryValidation : AbstractValidator<GetAllToDoItemsQ
 
         RuleFor(query => query.SortDirection)
             .IsValidSortDirection();
+
+        RuleFor(query => query.DateTimeRangeFilter)
+            .Must((instance, dateTimeRangeFilter) =>
+                (dateTimeRangeFilter == null && string.IsNullOrEmpty(instance.TimeZoneId)) ||
+                (dateTimeRangeFilter != null && !string.IsNullOrWhiteSpace(instance.TimeZoneId))
+            )
+            .WithMessage("DateTimeRangeFilter must be specified when TimeZoneId is provided, or must be null if TimeZoneId is null.");
+
+        RuleFor(query => query.TimeZoneId)
+            .Must((instance, timeZoneId) =>
+                (string.IsNullOrEmpty(timeZoneId) && instance.DateTimeRangeFilter == null) ||
+                (!string.IsNullOrWhiteSpace(timeZoneId) && instance.DateTimeRangeFilter != null)
+            )
+            .WithMessage("TimeZoneId must be specified when DateTimeRangeFilter is provided, or must be null if DateTimeRangeFilter is null.");
+
+        RuleFor(query => query.TimeZoneId)
+            .Must((instance, timeZoneId) =>
+            {
+                if (string.IsNullOrEmpty(timeZoneId))
+                    return true;
+
+                try
+                {
+                    TimeZoneInfo.FindSystemTimeZoneById(timeZoneId);
+                    return true;
+                }
+                catch (TimeZoneNotFoundException)
+                {
+                    return false;
+                }
+            })
+            .When(query => query.DateTimeRangeFilter != null)
+            .WithMessage("Invalid time zone id (e.g., 'Europe/Warsaw', 'America/New_York').");
     }
 }

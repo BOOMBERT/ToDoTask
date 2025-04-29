@@ -1,6 +1,8 @@
 ﻿using FluentValidation;
 using FluentValidation.AspNetCore;
 using Microsoft.Extensions.DependencyInjection;
+using ToDoTask.Application.Common;
+using ToDoTask.Application.Interfaces;
 
 namespace ToDoTask.Application.Extensions;
 
@@ -13,5 +15,7 @@ public static class ServiceCollectionExtensions
 
         services.AddValidatorsFromAssembly(applicationAssembly)
             .AddFluentValidationAutoValidation();
+
+        services.AddSingleton<IClock, SystemClock>();
     }
 }

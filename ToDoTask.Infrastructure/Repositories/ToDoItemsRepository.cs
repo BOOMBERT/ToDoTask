@@ -28,9 +28,16 @@ public class ToDoItemsRepository : IToDoItemsRepository
         int pageNumber,
         int pageSize,
         string? sortBy,
-        SortDirection? sortDirection)
+        SortDirection? sortDirection,
+        DateTime? filterExpiryDateTimeUtcStart,
+        DateTime? filterExpiryDateTimeUtcEnd)
     {
         var query = _context.ToDoItems.AsNoTracking();
+
+        if (filterExpiryDateTimeUtcStart != null && filterExpiryDateTimeUtcEnd != null)
+        {
+            query = query.Where(t => t.ExpiryDateTimeUtc >= filterExpiryDateTimeUtcStart && t.ExpiryDateTimeUtc <= filterExpiryDateTimeUtcEnd);
+        }
 
         if (!string.IsNullOrWhiteSpace(searchPhrase))
         {

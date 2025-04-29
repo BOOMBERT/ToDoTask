@@ -11,5 +11,7 @@ public interface IToDoItemsRepository
         int pageNumber,
         int pageSize,
         string? sortBy,
-        SortDirection? sortDirection);
+        SortDirection? sortDirection,
+        DateTime? filterExpiryDateTimeUtcStart,
+        DateTime? filterExpiryDateTimeUtcEnd);
 }

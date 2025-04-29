@@ -55,10 +55,10 @@ public class ToDoItemsController : ControllerBase
     }
 
     /// <summary>
-    /// Retrieves a paginated and optionally sorted list of ToDo items, along with pagination info, based on the query parameters.
+    /// Retrieves a paginated, optionally sorted and filtered list of ToDo items, along with pagination info, based on the query parameters.
     /// </summary>
-    /// <param name="query">The values used to paginate and optionally sort the list of ToDo items.</param>
-    /// <returns>The requested paginated and optionally sorted list of ToDo items matching the query criteria, along with pagination info.</returns>
+    /// <param name="query">The values used to paginate, optionally sort and filter the list of ToDo items.</param>
+    /// <returns>The requested paginated, optionally sorted and filtered list of ToDo items matching the query criteria, along with pagination info.</returns>
     /// <response code="200">The list of ToDo items was successfully retrieved.</response>
     /// <response code="400">The request is invalid (e.g., validation errors).</response>
     [HttpGet]
